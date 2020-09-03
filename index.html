@@ -111,7 +111,7 @@
               
                 <h1 id="introduction">Introduction</h1>
 <p>The goal of this page is to introduce the concepts of unfolding, the correcting of distortions on measured observables incurred by the measuring device. Outside particle physics this is also known as deconvolution or unsmearing and the mathematics can be found under the heading of inverse problems.</p>
-<p>Additionally, the tutorial shows how to install and use the latest version of <a href="http://hepunx.rl.ac.uk/~adye/software/unfold/RooUnfold.html">RooUnfold</a>, a <a href="https://root.cern/">ROOT</a>-based unfolding framework. It currently implements five methods:</p>
+<p>Additionally, the tutorial shows how to install and use the latest version of <a href="http://hepunx.rl.ac.uk/~adye/software/unfold/RooUnfold.html">RooUnfold</a>, a <a href="https://root.cern/">ROOT</a>-based unfolding framework. It currently implements 7 unfolding methods:</p>
 <ul>
 <li>Iterative bayes(as proposed by D'Agostini)</li>
 <li>Singular value decomposition (SVD; as proposed by Höcker and Kartvelishvili and implemented in TSVDUnfold)</li>
@@ -120,12 +120,12 @@
 <li>An interface to the TUnfold method developed by Stefan Schmitt</li>
 <li>Simple inversion of the response matrix without regularisation</li>
 <li>Gaussian Process unfolding (GP; as proposed by A. Bozson, G. Cowan and F. Spano)</li>
-<li>Poisson-based likelihood maximization</li>
 </ul>
+<p>Additionally, it also has implementations to estimate covariances, bias and coverage probabilities.</p>
 <p>RooUnfold was written by Tim Adye, Richard Claridge, Kerstin Tackmann,
-and Fergus Wilson.</p>
+and Fergus Wilson. For any technical questions or bug fixes, please contact the package maintainers at <a href="&#109;&#97;&#105;&#108;&#116;&#111;&#58;&#114;&#111;&#111;&#117;&#110;&#102;&#111;&#108;&#100;&#45;&#115;&#117;&#112;&#112;&#111;&#114;&#116;&#64;&#99;&#101;&#114;&#110;&#46;&#99;&#104;">&#114;&#111;&#111;&#117;&#110;&#102;&#111;&#108;&#100;&#45;&#115;&#117;&#112;&#112;&#111;&#114;&#116;&#64;&#99;&#101;&#114;&#110;&#46;&#99;&#104;</a>. For any tutorial specific questions please contact at <a href="&#109;&#97;&#105;&#108;&#116;&#111;&#58;&#112;&#105;&#109;&#46;&#106;&#111;&#114;&#100;&#105;&#46;&#118;&#101;&#114;&#115;&#99;&#104;&#117;&#117;&#114;&#101;&#110;&#64;&#99;&#101;&#114;&#110;&#46;&#99;&#104;">&#112;&#105;&#109;&#46;&#106;&#111;&#114;&#100;&#105;&#46;&#118;&#101;&#114;&#115;&#99;&#104;&#117;&#117;&#114;&#101;&#110;&#64;&#99;&#101;&#114;&#110;&#46;&#99;&#104;</a>.</p>
 <h2 id="tutorial-content">Tutorial Content</h2>
-<p>The tutorial is subdivided into sections of which each constitutes a subsection for the theory and a subsection for the implementation with RooUnfold. The tutorial contains the following sections:</p>
+<p>The tutorial is subdivided into sections dedicated to a specific subject. Each section discusses the concepts including some mathematics and is supported with example code that can be run with the setup given on this webpage. The tutorial contains the following subjects:</p>
 <ul>
 <li>Motivation for unfolding</li>
 <li>Mathematical formulation</li>
@@ -134,7 +134,6 @@ and Fergus Wilson.</p>
 <li>Regularization and the bias-variance trade-off</li>
 <li>Covariance matrix and bias</li>
 <li>MSE and coverage</li>
-<li>Closure and stress test</li>
 </ul>
 <h2 id="literature">Literature</h2>
 <p>Here is a non-exhaustive list of supporting literature on unfolding in particle physics.</p>
@@ -195,5 +194,5 @@ and Fergus Wilson.</p>
 
 <!--
 MkDocs version : 1.0.4
-Build Date UTC : 2020-09-03 13:35:37
+Build Date UTC : 2020-09-03 15:08:54
 -->

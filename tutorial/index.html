@@ -532,6 +532,16 @@ TMatrixD covtoys = unfold-&gt;Eunfold(RooUnfolding::kCovToys);
 </script>
 </p>
 <p>with <script type="math/tex">\mu_{i}</script> being the <script type="math/tex">i</script>-th bin of a truth distribution chosen by the analyst.</p>
+<h3 id="code-example_8">Code Example</h3>
+<pre><code>// Calculate the bias with K=1000000 toys w.r.t. the truth distribution truthTestHist.
+unfold-&gt;CalculateBias(RooUnfolding::kBiasToys,1000000, spec.makeHistogram(truthTestHist));
+
+// Get the bias vector.
+TVectorD bias = unfold-&gt;Vbias();
+</code></pre>
+<p>Bias calculation for matrix inversion and iterative bayes with 2 iterations unfolding with toys(<script type="math/tex">K=1000000</script>)</p>
+<p><img alt="bias" src="../img/bias_inv.jpg" /> <img alt="bias" src="../img/bias_bayes2.jpg" /></p>
+<p>Note the very small bias for matrix inversion unfolding as expected in the unregularized case in contrast to the large bias of the very regularized case of the iterative bayes 2 iterations unfolding.</p>
 <h2 id="mse-and-coverage">MSE and coverage</h2>
 <p>In this section two quantities are discussed that can be used to assess an estimator and fine tune the regularization parameter.</p>
 <h3 id="mse">MSE</h3>
@@ -557,6 +567,17 @@ TMatrixD covtoys = unfold-&gt;Eunfold(RooUnfolding::kCovToys);
 </p>
 <p>with <script type="math/tex">\Phi</script> being the Standard Gaussian cumulative distribution function and <script type="math/tex">Z</script> corresponding the size of the constructed confidence interval. The coverage is also connected to regularization. An unbiased estimator(<script type="math/tex">b_{i}=0</script>), like the ML estimator, will have a perfect coverage probability of 68.3%. In case bias is introduced by regularizing then the estimators are expected to undercover. It is up to the analyst to decide what amount of undercoverage is acceptable.</p>
 <p><img alt="cov|212x397" src="../img/cov.png" /></p>
+<h3 id="code-example_9">Code example</h3>
+<pre><code>// Calculate the bias with K=1000000 toys w.r.t. the truth distribution truthTestHist.
+// This is needed for the coverage probability calculation.
+unfold-&gt;CalculateBias(RooUnfolding::kBiasToys,1000000, spec.makeHistogram(truthTestHist));
+
+// Calculate the coverage probability for each bin for 1-sigma confidence intervals.
+TVectorD cov = unfold-&gt;CoverageProbV(1);
+</code></pre>
+<p>Coverage probability for matrix inversion and iterative bayes with 2 iterations unfolding.
+<img alt="bias" src="../img/coverage_inv.jpg" /> <img alt="bias" src="../img/coverage_bayes2.jpg" /></p>
+<p>Note the clear undercoverage for the regularized scenario of the iterative bayes with 2 iterations and the almost perfect 68.3% coverage of the unregularized matrix inversion unfolding.</p>
 <p><em>M. J. Kuusela. Uncertainty quantification in unfolding elementary particle spectra at the large hadron collider. pages 84–86, 2016.</em></p>
               
             </div>
