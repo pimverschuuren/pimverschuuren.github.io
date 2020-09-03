@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  
+  <link rel="shortcut icon" href="../img/favicon.ico">
+  <title>Tutorial - RooUnfold</title>
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
+
+  <link rel="stylesheet" href="../css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../css/theme_extra.css" type="text/css" />
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css">
+  
+  <script>
+    // Current page data
+    var mkdocs_page_name = "Tutorial";
+    var mkdocs_page_input_path = "tutorial.md";
+    var mkdocs_page_url = null;
+  </script>
+  
+  <script src="../js/jquery-2.1.1.min.js" defer></script>
+  <script src="../js/modernizr-2.8.3.min.js" defer></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script> 
+  
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+      <div class="wy-side-nav-search">
+        <a href=".." class="icon icon-home"> RooUnfold</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+	<ul class="current">
+	  
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="..">Home</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../setup/">Setup</a>
+	    </li>
+          
+            <li class="toctree-l1 current">
+		
+    <a class="current" href="./">Tutorial</a>
+    <ul class="subnav">
+            
+    <li class="toctree-l2"><a href="#motivation-for-unfolding">Motivation for unfolding</a></li>
+    
+        <ul>
+        
+            <li><a class="toctree-l3" href="#mathematical-formulation">Mathematical formulation</a></li>
+        
+            <li><a class="toctree-l3" href="#building-the-response-matrix">Building the response matrix</a></li>
+        
+            <li><a class="toctree-l3" href="#matrix-inversion-and-bin-by-bin">Matrix inversion and bin-by-bin</a></li>
+        
+            <li><a class="toctree-l3" href="#regularization-and-bias-variance-trade-off">Regularization and bias-variance trade-off</a></li>
+        
+            <li><a class="toctree-l3" href="#covariance-matrix-and-bias">Covariance matrix and bias</a></li>
+        
+            <li><a class="toctree-l3" href="#mse-and-coverage">MSE and coverage</a></li>
+        
+        </ul>
+    
+
+    </ul>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../example/">Example</a>
+	    </li>
+          
+        </ul>
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="..">RooUnfold</a>
+      </nav>
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="..">Docs</a> &raquo;</li>
+    
+      
+    
+    <li>Tutorial</li>
+    <li class="wy-breadcrumbs-aside">
+      
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main">
+            <div class="section">
+              
+                <h1 id="motivation-for-unfolding">Motivation for unfolding</h1>
+<p>In any experimental setup the measuring device will have imperfections such as finite resolution, limited acceptance or detection efficiency. These imperfections will result in a measurement that is distorted from nature. Correcting for these distortions is known as unfolding. The general motivation for unfolding is to get results that are not measurement device dependent and can be compared with the results of other experiments. It should be noted that it is not always necessary to unfold. In case one wants to compare a measurement to a theoretical prediction it is often easier to simulate the detector effects on the theoretical prediction.</p>
+<p>However, for a measurement to retain its value over time and be comparable with possible future theoretical predictions the detector response, in one form or another, should be preserved as well. This is often impractical. Unfolding provides a result which can be directly compared with those of other experiments and theoretical predictions.</p>
+<h2 id="mathematical-formulation">Mathematical formulation</h2>
+<p>Lets assume we have some measurable quantity, eg. the transverse momentum of a particle, respresented by the random variable <script type="math/tex">x</script> with probability density function <script type="math/tex">g(x)</script>. Each measured value <script type="math/tex">x</script> has a true value for a random variable <script type="math/tex">y</script> with probability density function <script type="math/tex">f(y)</script>. These two pdfs are related by a convolution</p>
+<p>
+<script type="math/tex; mode=display">
+    g(x) = \int R(x|y) f(y) dy
+</script>
+</p>
+<p>where <script type="math/tex">R(x|y)</script> is the response function. In particle physics, the measured quantities are binned into histograms so we will focus on the discretized version of the problem. The above convolution changes to the linear equation</p>
+<p>
+<script type="math/tex; mode=display">
+    \vec{\nu} = R\vec{\mu}
+</script>
+</p>
+<p>with <script type="math/tex">\vec{\nu}</script> being the <script type="math/tex">N</script>-vector of expectation values for the bins of observed variable <script type="math/tex">x</script> and <script type="math/tex">\vec{\mu}</script> being the <script type="math/tex">M</script>-vector of expectation values for the histogram of <script type="math/tex">y</script>. The histogram of the actual observed data is given by the <script type="math/tex">N</script>-vector <script type="math/tex">\vec{n}</script>. The response matrix <script type="math/tex">R</script> is a <script type="math/tex">N \times M</script> matrix and has an interpretation of a conditional probability.</p>
+<p>
+<script type="math/tex; mode=display">
+    R_{ij} = P(\mbox{observed in bin }i | \mbox{true value in bin }j) = \frac{P(\mbox{observed in bin }i\mbox{ and } \mbox{true value in bin }j)}{P(\mbox{true value in bin }j)}
+</script>
+</p>
+<p>The observed data <script type="math/tex">\vec{n}</script>, their expectation values <script type="math/tex">\vec{\nu}</script>, the response matrix <script type="math/tex">R</script> and the expectation values of the true histogram <script type="math/tex">\vec{\mu}</script> are finally related by</p>
+<p>
+<script type="math/tex; mode=display">
+    E[\vec{n}] = \vec{\nu} = R\vec{\mu}
+</script>
+</p>
+<h2 id="building-the-response-matrix">Building the response matrix</h2>
+<p>The first step of unfolding is building the response matrix. Here we assume that the analyst has chosen an observable to unfold, a Monte Carlo simulation to fill the expected truth distribution <script type="math/tex">\vec{\mu}</script> and a detector simulation to fill the expected reconstructed distribution <script type="math/tex">\vec{\nu}</script>. The result is a table of events with a true and reconstructed value of the chosen observable. Lets assume we filled a 2D histogram <script type="math/tex">A</script> with the reconstructed values on the x-axis and the true values on the y-axis. Recall that</p>
+<p>
+<script type="math/tex; mode=display">
+    R_{ij} = \frac{P(\mbox{observed in bin }i\mbox{ and } \mbox{true value in bin }j)}{P(\mbox{true value in bin }j)}
+</script>
+</p>
+<p>These probabilities can be approximated in the limit of many events by</p>
+<p>
+<script type="math/tex; mode=display">
+    P(\mbox{observed in bin }i\mbox{ and } \mbox{true value in bin }j) = \frac{\mbox{Number of reconstructed events in bin }i\mbox{ and true events in } j}{\mbox{Total number of events}}
+</script>
+<script type="math/tex; mode=display">
+ = \frac{A_{ij}}{\sum_{i}^{N}\sum_{j}^{M}A_{ij}}
+</script>
+</p>
+<p>and</p>
+<p>
+<script type="math/tex; mode=display">
+    P(\mbox{true value in bin }j) = \frac{\mbox{Number of true events in bin }j}{\mbox{Total number of events}} = \frac{\sum_{i}^{N}A_{ij}}{\sum_{i}^{N}\sum_{j}^{M}A_{ij}}
+</script>
+</p>
+<p>The response matrix element can therefore be approximated by</p>
+<p>
+<script type="math/tex; mode=display">
+    R_{ij} = \frac{A_{ij}}{\sum_{i}^{N}A_{ij}}
+</script>
+</p>
+<p>One should note that this approximation will hold for diagonal matrix elements and the ones close to the diagonal i.e. the elements corresponding to heavily populated bins. One can change the binning to increase the bin counts or apply some sort of smoothing to ensure the validity of the response matrix.</p>
+<h3 id="efficiency">Efficiency</h3>
+<p>In the above we assumed that for every true value there is a corresponding recontructed value. However, in reality the detector will have an efficiency resulting in a fraction of the true events not being reconstructed. Because one can only use events with both a true and reconstructed value to fill the histogram <script type="math/tex">A</script> the sum <script type="math/tex"> \sum_{i}^{N}A_{ij} </script> will no longer be equal to the total number of generated events. Instead one needs to fill a 1D histogram <script type="math/tex">\vec{\mu}</script> with all the true values and use that to calculate the response matrix.</p>
+<p>
+<script type="math/tex; mode=display">
+    R_{ij} = \frac{A_{ij}}{\mu_{j}}
+</script>
+</p>
+<p>The efficiency i.e. the number of events from truth bin <script type="math/tex">j</script> that are reconstructed in any bin is then</p>
+<p>
+<script type="math/tex; mode=display">
+    \epsilon_{j} = \sum_{i}^{N}R_{ij}
+</script>
+</p>
+<h3 id="code-example">Code Example</h3>
+<p>Lets start with some code that simulates event generation. In this example we use RooFit classes to sample values from a falling distribution.</p>
+<pre><code>// A variable for the truth distribution.
+RooRealVar xtrue("xtrue","xtrue",-5,5);
+
+// A parameter of the falling distribution defining the shape.
+RooRealVar lambda("lambda","lambda",-0.00035);
+
+// The falling distribution.
+RooExponential truthPDF("truthPDF","truthPDF", xtrue, lambda);
+</code></pre>
+<p>Define some simple variable dependent smearing and efficiency function.</p>
+<pre><code>Double_t Smear(Double_t xtrue){
+
+      // Simulate efficiency.
+      Double_t xeff= 0.3 + (1.0-0.3)/20*(xt+10.0);
+      Double_t x= gRandom-&gt;Rndm();
+      if (x&gt;xeff) return -1;
+
+      // Simulate smearing.
+      Double_t xsmear= gRandom-&gt;Gaus(0,0.05*xtrue);
+
+      return xt+xsmear;
+}
+</code></pre>
+<p>Define the binning of the truth and reconstructed distribution.</p>
+<pre><code>Double_t reco_binning[26] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,20,25,30,35,40,50,60};
+Double_t truth_binning[13] = {0,2,4,6,8,10,12,14,18,25,35,45,60};
+
+TH1D* truthHist = new TH1D("truthHist","truthHist",12,truth_binning);
+TH1D* recoHist = new TH1D("recoHist","recoHist",25,reco_binning);
+TH2D* responseHist = new TH2D("response","response", 25, reco_binning, 12, truth_binning);
+</code></pre>
+<p>Define the histograms for some data to unfold and a truth distribution to compare the unfolding results with.</p>
+<pre><code>TH1D* truthTestHist = new TH1D("truthTestHist","truthTestHist",12,truth_binning);
+TH1D* dataHist = new TH1D("dataHist","dataHist",25,reco_binning);
+</code></pre>
+<p>Loop over the generated events, smear them and use them to fill the histograms.</p>
+<pre><code>// Realistically, there are more MC events than data events available.
+Int_t n_MC_events = 500000;
+Int_t n_data_events = 10000;
+
+// Calculate the lumi weight with which the MC will be scaled down.
+Double_t lumiScale = (double)n_data_events/n_MC_events;
+
+// Generate the events;
+RooDataSet* MCEvents = truthPDF.generate(xtrue,n_MC_events);
+RooDataSet* dataEvents = truthPDF.generate(xtrue,n_data_events);
+
+// Loop over both datasets and fill the histograms.
+for (int i = 0; i &lt; n_MC_events; i++){
+
+    Double_t xtrue_val = ((RooRealVar*)(MCEvents-&gt;get(i))-&gt;find(xtrue.GetName()))-&gt;getVal();
+
+    Double_t xreco_val = Smear(xtrue_val);
+
+    truthHist-&gt;Fill(xtrue_val, lumiScale);
+
+    if (xreco_val &gt; 0){
+       recoHist-&gt;Fill(xreco_val, lumiScale);
+       responseHist-&gt;Fill(xreco_val, xtrue_val, lumiScale);
+    }
+}
+
+for (int i = 0; i &lt; n_data_events; i++){
+
+    Double_t xtrue_val = ((RooRealVar*)(dataEvents-&gt;get(i))-&gt;find(xtrue.GetName()))-&gt;getVal();
+
+    Double_t xreco_val = Smear(xtrue_val);
+
+    truthTestHist-&gt;Fill(xtrue_val);
+
+    if (xreco_val &gt; 0){
+       dataHist-&gt;Fill(xreco_val);
+    }
+}
+</code></pre>
+<p>Create a factory object that will build the response matrix and book keep all of the histograms.</p>
+<pre><code>RooUnfoldSpec spec("unfold","unfold",truthHist,"obs_truth",recoHist,"obs_reco",responseHist,NULL,dataHist,false,0.0005);
+</code></pre>
+<p>Input distributions
+<img alt="hist" src="../img/hist.jpg" />
+Unnormalized response matrix
+<img alt="hist" src="../img/response.jpg" /></p>
+<h2 id="matrix-inversion-and-bin-by-bin">Matrix inversion and bin-by-bin</h2>
+<p>In this section we will discuss two unfolding methods i.e. two approaches for building estimators for the true distribution <script type="math/tex">\vec{\mu}</script>. These methods can be used in certain scenarios but often will show to give unsatisfactory results.</p>
+<h3 id="matrix-inversion">Matrix inversion</h3>
+<p>Suppose the response matrix can be inverted. In that case, one can write</p>
+<p>
+<script type="math/tex; mode=display">
+    \vec{\mu} = R^{-1}\vec{\nu}
+</script>
+</p>
+<p>A reasonable choice of estimators for <script type="math/tex"> \vec{\mu} </script> would then be</p>
+<p>
+<script type="math/tex; mode=display">
+    \hat{\vec{\mu}} = R^{-1}\vec{n}
+</script>
+</p>
+<p>One can show that this is equivalent to a maximum likelihood(ML) solution under the assumption that the elements of the data vector <script type="math/tex"> \vec{n} </script> are independent and Poisson distributed around mean <script type="math/tex">\vec{\nu}</script>. In case the off-diagonal elements of the response matrix are large the estimator <script type="math/tex"> \hat{\vec{\mu}} </script> will have large variances and strong negative correlations.</p>
+<p>Show response matrix, truth, reconstructed, data and largely fluctuating estimator of the truth histogram.</p>
+<p>The small fluctuations in <script type="math/tex">\vec{n}</script> are "seen by <script type="math/tex">R^{-1}</script>" as a fine structure that is enlarged in the estimators. One should note though that the ML/matrix inversion estimators are unbiased and have the smallest possible variance. We will show later that in order to reduce the variance one needs to introduce some bias by regularization.</p>
+<h3 id="bin-by-bin">Bin-by-bin</h3>
+<p>An alternative method with much smaller variances is applying bin-by-bin correction factors.</p>
+<p>
+<script type="math/tex; mode=display">
+    \hat{\mu}_{i} = C_{i}n_{i}
+</script>
+</p>
+<p>with</p>
+<p>
+<script type="math/tex; mode=display">
+    C_{i} = A_{ii}
+</script>
+</p>
+<p>This method is effectively the same as applying the matrix inversion method with all the off-diagonal elements set to zero. This will reduce the variance substantially but also introduce some bias. Both the matrix inversion and the bin-by-bin methods can be reasonable solutions in case of very small off-diagonal response matrix elements. However, often one needs to apply some form of regularization that constrains <script type="math/tex">\vec{\mu}</script>-space in which solutions are deemed reasonable.</p>
+<h3 id="code-example_1">Code Example</h3>
+<p>Lets use the generated data to unfold with both matrix inversion and bin-by-bin.</p>
+<pre><code>// Instantiate a RooUnfoldFunc
+RooUnfoldFunc* unfoldFuncInvert = (RooUnfoldFunc*)spec.makeFunc(RooUnfolding::kInvert);
+RooUnfoldFunc* unfoldFuncBBB = (RooUnfoldFunc*)spec.makeFunc(RooUnfolding::kBinByBin);
+
+// Instantiate a RooUnfold object with RooFitHist as template type.                                                                                                             
+RooUnfoldT&lt;RooUnfolding::RooFitHist,RooUnfolding::RooFitHist&gt;* unfoldInvert = const_cast&lt;RooUnfoldT&lt;RooUnfolding::RooFitHist,RooUnfolding::RooFitHist&gt;*&gt;(unfoldFuncInvert-&gt;unfolding());
+RooUnfoldT&lt;RooUnfolding::RooFitHist,RooUnfolding::RooFitHist&gt;* unfoldBBB = const_cast&lt;RooUnfoldT&lt;RooUnfolding::RooFitHist,RooUnfolding::RooFitHist&gt;*&gt;(unfoldFuncBBB-&gt;unfolding());
+
+// Unfold and get the unfolded distribution and errors.  
+TVectorD invertUnfolded = unfoldInvert-&gt;Vunfold();
+TVectorD invertErrors = unfoldInvert-&gt;EunfoldV(RooUnfolding::kErrors);
+
+TVectorD BBBUnfolded = unfoldBBB-&gt;Vunfold();
+TVectorD BBBErrors = unfoldBBB-&gt;EunfoldV(RooUnfolding::kErrors);
+</code></pre>
+<p>Distribution unfolded with matrix inversion
+<img alt="" src="../img/invert.jpg" />
+Distribution unfolded with Bin-by-bin
+<img alt="" src="../img/BBB.jpg" /></p>
+<h2 id="regularization-and-bias-variance-trade-off">Regularization and bias-variance trade-off</h2>
+<p>Recall that the observed data <script type="math/tex"> \vec{n} </script> is independent and Poisson distributed around <script type="math/tex"> \vec{\nu} </script>. We can therefore construct the following log-likelihood.</p>
+<p>
+<script type="math/tex; mode=display">
+    \log L(\vec{\mu}) = \sum_{i}^{N}(n_{i}\log \nu_{i} - \nu_{i}) \mbox{    with    } \nu_{i} = \sum_{j}^{M}R_{ij}\mu_{j}
+</script>
+</p>
+<p>The solution that maximizes this likelihood is <script type="math/tex"> \vec{n} = \vec{\nu} </script> i.e. the matrix inversion solution. This is an example of overfitting and can be avoided by introducing some constraint on the likelihood maximization in the form of a regularization function.</p>
+<p>
+<script type="math/tex; mode=display">
+    \phi(\vec{\mu}) = \log L(\vec{\mu}) + \tau S(\vec{\mu})
+</script>
+</p>
+<p>Here the regularization function introduces some form of prior knowledge on what the solution should look like i.e. it introduces bias but reduces the variance of the estimator <script type="math/tex">\hat{\vec{\mu}}</script>. This is also known as the bias-variance trade-off. Both variance and bias are sources of error on the predictive model that is the truth estimator <script type="math/tex">\hat{\vec{\mu}}</script>. The regularization parameter <script type="math/tex"> \tau </script> determines where this bias-variance trade-off will lie.</p>
+<p><img alt="biasvariance|212x397" src="../img/biasvariance.png" /></p>
+<p>We will discuss later how to choose the regularization paremeter. The choice of <script type="math/tex"> S(\vec{\mu}) </script> depends on the problem but often is chosen to impose some amount of smoothness on the estimator <script type="math/tex"> \vec{\mu} </script> eg. with Tikhonov or entropy-based regularization. In the following section we will discuss some unfolding algorithms and their form of regularization that are commonly used in particle physics.</p>
+<h3 id="tikhonov-regularization">Tikhonov regularization</h3>
+<p>A very common choice of <script type="math/tex">S(\vec{\mu})</script> is one based on the derivatives of the true distribution. Tikhonov regularization constructs a regularization function by taking the square of the <script type="math/tex">k</script>-th derivative of the true distribution. For <script type="math/tex">k=2</script> and with finite differences the regularization function is</p>
+<p>
+<script type="math/tex; mode=display">
+    S(\vec{\mu}) = - \sum_{i=1}^{M-2}(-\mu_{i} + 2\mu_{i+1} - \mu_{i+2})^{2}
+</script>
+</p>
+<p>This function quantifies the amount of curvature the true distribution has. Distributions such as the ML solution have very large second derivatives and are therefore penalized heavily.</p>
+<p><em>A. N. Tikhonov and V. Y. Arsenin. Solutions of Ill-posed problems. W.H. Winston, 1977.</em></p>
+<h3 id="code-example_2">Code Example</h3>
+<p>RooUnfold has two Tikhonov regularized unfolding implementations: RooUnfoldSVD and RooUnfoldTUnfold. RooUnfoldSVD will be discussed seperately in an upcoming section. TUnfold implements a Gaussian likelihood and calculates the unfolded distribution with a closed form.</p>
+<pre><code>// Instantiate a RooUnfoldFunc. Pass the regularization parameter tau=0.001.
+RooUnfoldFunc* unfoldFuncTUnfold = (RooUnfoldFunc*)spec.makeFunc(RooUnfolding::kTUnfold,0.001);
+
+// Instantiate a RooUnfold object with RooFitHist as template type.
+RooUnfoldT&lt;RooUnfolding::RooFitHist,RooUnfolding::RooFitHist&gt;* unfoldTUnfold = const_cast&lt;RooUnfoldT&lt;RooUnfolding::RooFitHist,RooUnfolding::RooFitHist&gt;*&gt;(unfoldFuncTUnfold-&gt;unfolding());
+
+// Unfold and get the unfolded distribution and errors.
+TVectorD tunfoldUnfolded = unfoldTUnfold-&gt;Vunfold();
+TVectorD tunfoldErrors = unfoldTUnfold-&gt;EunfoldV(RooUnfolding::kErrors);
+</code></pre>
+<p>Gaussian likelihood and Tikhonov regularization with <script type="math/tex">\tau=10</script> and <script type="math/tex">\tau=0.001</script>
+</p>
+<p><img alt="tunfold" src="../img/tunfold10.jpg" /> <img alt="tunfold" src="../img/tunfold0001.jpg" /></p>
+<p>Gaussian likelihood and Tikhonov regularization with <script type="math/tex">\tau=0.0005</script> and <script type="math/tex">\tau=0.000001</script>
+<img alt="tunfold" src="../img/tunfold00005.jpg" /> <img alt="tunfold" src="../img/tunfold0000001.jpg" /></p>
+<h3 id="richardson-lucy-iterative-bayes">Richardson-Lucy (Iterative Bayes)</h3>
+<p>The Richardson-Lucy algorithm, or iterative bayes unfolding as described by D’Agostini in, is an unfolding procedure that updates the estimator <script type="math/tex"> \vec{\mu} </script> with each iteration. The estimator is defined as</p>
+<p>
+<script type="math/tex; mode=display">
+    \hat{\mu}_{j}^{r+1} = \hat{\mu}_{j}^{r}\sum_{i}^{N}\frac{R_{ij}n_{i}}{\sum_{k}^{M}R_{ik}\hat{\mu}_{j}^{r}}
+</script>
+</p>
+<p>for the <script type="math/tex">j</script>-th bin and <script type="math/tex">r+1</script> iterations. The analyst needs to supply an initial truth distribution <script type="math/tex">\hat{\vec{\mu}}^{0}</script>. The number of iterations determines the amount of regularization where few iterations will result in an estimator with small variance but will be biased towards this initial truth distribution. The bias-variance balance can be tipped in the other direction by increasing the number of iterations. In the limit of many iterations it is emperically shown that the estimator will converge to the ML estimator.</p>
+<p><em>W. H. Richardson. Bayesian-based iterative method of image restoration. J. Opt. Soc. Am., 62(1):55–59, Jan 1972.</em></p>
+<p><em>L. B. Lucy. An iterative technique for the rectification of observed distributions. 79:745, Jun 1974.</em></p>
+<p><em>G. D’Agostini. A multidimensional unfolding method based on bayes theorem. 1995. Nucl. Instrum. Meth. A 362 (1995) 487.</em></p>
+<h3 id="code-example_3">Code Example</h3>
+<pre><code>// Instantiate a RooUnfoldFunc. Pass the regularization parameter r=20.
+RooUnfoldFunc* unfoldFuncBayes = (RooUnfoldFunc*)spec.makeFunc(RooUnfolding::kBayes,20);
+
+// Instantiate a RooUnfold object with RooFitHist as template type.
+RooUnfoldT&lt;RooUnfolding::RooFitHist,RooUnfolding::RooFitHist&gt;* unfoldBayes = const_cast&lt;RooUnfoldT&lt;RooUnfolding::RooFitHist,RooUnfolding::RooFitHist&gt;*&gt;(unfoldFuncBayes-&gt;unfolding());
+
+// Unfold and get the unfolded distribution and errors.
+TVectorD bayesUnfolded = unfoldBayes-&gt;Vunfold();
+TVectorD bayesErrors = unfoldBayes-&gt;EunfoldV(RooUnfolding::kErrors);
+</code></pre>
+<p>Iterative bayes with <script type="math/tex">r=1</script> and <script type="math/tex">r=20</script>
+</p>
+<p><img alt="bayes" src="../img/bayes1.jpg" /> <img alt="bayes" src="../img/bayes20.jpg" /></p>
+<p>Iterative bayes with <script type="math/tex">r=100</script> and <script type="math/tex">r=2000</script>
+</p>
+<p><img alt="bayes" src="../img/bayes100.jpg" /> <img alt="bayes" src="../img/bayes2000.jpg" /></p>
+<h3 id="singular-value-decomposition-svd">Singular Value Decomposition (SVD)</h3>
+<p>Singular Value Decomposition is an unfolding method that constructs a likelihood with the data <script type="math/tex">\vec{n}</script> Gaussian distributed. The mean is taken to be the expected bin count <script type="math/tex">\vec{\nu}</script> and a measured covariance <script type="math/tex">V_{ij}</script>. The regularization function is the discretized Tikhonov second derivative regularization. The constrained log-likelihood can be written down in matrix form as</p>
+<p>
+<script type="math/tex; mode=display">
+    \phi(\vec{\mu}) = -\frac{1}{2}(R\vec{\mu} - \vec{n})V^{-1}(R\vec{\mu} - \vec{n})^{T} + \tau (C\vec{\mu})^{T} (C\vec{\mu})
+</script>
+</p>
+<p>SVD unfolding sets this expression to zero and solves for <script type="math/tex">\vec{\mu}</script> with the use of singular value decomposition. It also uses singular value decomposition to determine which of the data bins contribute the most to large fluctuations in the unfolded distribution and use that information to choose <script type="math/tex">\tau</script>. The user actually choses an integer <script type="math/tex">k</script> between 0 and the number of truth bins <script type="math/tex">N</script> which then is translated into a value for <script type="math/tex">\tau</script> that supresses the <script type="math/tex">N-k</script> data bins that contribute the most to the unwanted large fluctuations in the unfolded distribution. So <script type="math/tex">k=0</script> will result in a heavily regularized distribution and <script type="math/tex">k=N</script> will return the ML solution.</p>
+<p><em>Hocker and Kartvelishvili. Svd-based unfolding: implementation and experience. PHYSTAT 2011, 2011.</em></p>
+<p><em>K. Tackmann. Svd approach to data unfolding. 1996. Nucl. Instrum. Meth. A 372 (1996) 469.</em></p>
+<h3 id="code-example_4">Code Example</h3>
+<pre><code>// Instantiate a RooUnfoldFunc. Pass the regularization parameter k=8.
+RooUnfoldFunc* unfoldFuncSvd = (RooUnfoldFunc*)spec.makeFunc(RooUnfolding::kSVD,8);
+
+// Instantiate a RooUnfold object with RooFitHist as template type.
+RooUnfoldT&lt;RooUnfolding::RooFitHist,RooUnfolding::RooFitHist&gt;* unfoldSvd = const_cast&lt;RooUnfoldT&lt;RooUnfolding::RooFitHist,RooUnfolding::RooFitHist&gt;*&gt;(unfoldFuncSvd-&gt;unfolding());
+
+// Unfold and get the unfolded distribution and errors.
+TVectorD svdUnfolded = unfoldSvd-&gt;Vunfold();
+TVectorD svdErrors = unfoldSvd-&gt;EunfoldV(RooUnfolding::kErrors);
+</code></pre>
+<p>SVD with <script type="math/tex">k=2</script> and <script type="math/tex">k=8</script>
+</p>
+<p><img alt="svd" src="../img/svd2.jpg" /> <img alt="svd" src="../img/svd8.jpg" /></p>
+<p>SVD with <script type="math/tex">k=10</script> and <script type="math/tex">k=12</script>
+</p>
+<p><img alt="svd" src="../img/svd10.jpg" /> <img alt="svd" src="../img/svd12.jpg" /></p>
+<h3 id="iterative-dynamically-stabilized-ids">Iterative Dynamically Stabilized (IDS)</h3>
+<p>Iterative Dynamically Stabilized unfolding is an unfolding procedure that starts from an initial unfolded distribution very biased towards a normalized truth distribution. It then tries to improve the result by improving the response matrix with each iteration. The estimators are defined as</p>
+<p>
+<script type="math/tex; mode=display">
+    \hat{\mu_{i}} = \mu_{i}^{MC}C + \Delta\beta_{i}^{true} + \sum_{j}^{M}\big(f(\Delta n_{i}, \sigma_{\Delta n_{i}}, \lambda)R_{ji}\Delta n_{i} - (1 - f(\Delta n_{i}, \sigma_{\Delta n_{i}}, \lambda))\Delta n_{i}\delta_{ji}\big)
+</script>
+</p>
+<p>with <script type="math/tex">\mu_{i}^{MC}</script> being some initial truth distribution, <script type="math/tex">C</script> a normalization constant that corrects for differences in MC and data, <script type="math/tex">\Delta\beta_{i}^{true}</script> the expected number of truth events associated with fluctations in background subtraction, <script type="math/tex">\Delta n_{i} = n_{i} - \Delta\beta_{i}^{reco} - C\nu_{i}</script>, <script type="math/tex"> \sigma_{\Delta n_{i}} </script> the uncertainty on the measured data <script type="math/tex">n_{i}</script>, <script type="math/tex">R_{ji}</script> the response matrix, <script type="math/tex"> f(\Delta n_{i}, \sigma_{\Delta n_{i}}, \lambda) </script> a number between 0 and 1 and <script type="math/tex"> \lambda</script> that regulates this fraction. This is used for an initial unfolded distribution and then improved by changing the response matrix <script type="math/tex">R_{ij}</script> with each iteration.</p>
+<p><em>B. Malaescu. An iterative, dynamically stabilized method of data unfolding. arXiv:0907.3791.</em></p>
+<pre><code>// Instantiate a RooUnfoldFunc
+RooUnfoldFunc* unfoldFuncIds = (RooUnfoldFunc*)spec.makeFunc(RooUnfolding::kIDS,10);
+
+// Instantiate a RooUnfold object with RooFitHist as template type.
+RooUnfoldT&lt;RooUnfolding::RooFitHist,RooUnfolding::RooFitHist&gt;* unfoldIds = const_cast&lt;RooUnfoldT&lt;RooUnfolding::RooFitHist,RooUnfolding::RooFitHist&gt;*&gt;(unfoldFuncIds-&gt;unfolding());
+
+// Unfold and get the unfolded distribution and errors.
+TVectorD idsUnfolded = unfoldIds-&gt;Vunfold();
+TVectorD idsErrors = unfoldIds-&gt;EunfoldV(RooUnfolding::kErrors);
+</code></pre>
+<p>IDS with <script type="math/tex">\lambda=2</script> and <script type="math/tex">\lambda=20</script>
+</p>
+<p><img alt="ids" src="../img/ids2.jpg" /> <img alt="ids" src="../img/ids20.jpg" /></p>
+<p>IDS with <script type="math/tex">\lambda=100</script> and <script type="math/tex">\lambda=200</script>
+</p>
+<p><img alt="ids" src="../img/ids100.jpg" /> <img alt="ids" src="../img/ids200.jpg" /></p>
+<h3 id="gaussian-processes-gp">Gaussian Processes (GP)</h3>
+<p>Gaussian Processes uses Bayesian regression to define an estimator as the mode of the posterior distribution. The posterior distribution is constructed with Bayes' theorem from a Gaussian likelihood and a Gaussian Process(GP) prior. Regularisation is introduced via the kernel function of the GP. Depending on the prior knowledge one has on the truth distribution different choices of kernels are possible. The amount of regularisation is determined by the parameters of the kernel which can be varied until unfolding results show satisfactory. It is also possible to choose these parameters based on the maximization of the likelihood marginalized over the truth distribution.</p>
+<p>The current implementation of RooUnfold has two kernel functions available:</p>
+<ul>
+<li>Radial kernel (Parameters: <script type="math/tex">(A, l)</script>)
+<script type="math/tex; mode=display">
+    k(x, x') = A \mbox{exp}\Bigg( \frac{-(x - x')^{2}}{2l^{2}}\Bigg)
+</script>
+</li>
+<li>Gibbs kernel (Parameters: <script type="math/tex">(A,b,c)</script>)
+<script type="math/tex; mode=display">
+    k(x, x') = A \sqrt{\frac{2l(x)l(x')}{l^{2}(x) + l^{2}(x')}}\mbox{exp}\Bigg( \frac{-(x - x')^{2}}{l^{2}(x) - l^{2}(x')}\Bigg)
+</script>
+with <script type="math/tex">l(x) = bx + c</script> and <script type="math/tex">x</script> and <script type="math/tex">x'</script> denoting two bin centers.</li>
+</ul>
+<p><em>A. Bozson, G. Cowan, and F. Spano. Unfolding with Gaussian Processes. 11 2018.</em></p>
+<pre><code>// Instantiate a RooUnfoldFunc. The regularization parameter determines the kernel.
+// 1 = Radial kernel and 2 = Gibbs kernel.
+RooUnfoldFunc* unfoldFuncGP = (RooUnfoldFunc*)spec.makeFunc(RooUnfolding::kGP,2);
+
+// Instantiate a RooUnfold object with RooFitHist as template type.
+RooUnfoldT&lt;RooUnfolding::RooFitHist,RooUnfolding::RooFitHist&gt;* unfoldGP = const_cast&lt;RooUnfoldT&lt;RooUnfolding::RooFitHist,RooUnfolding::RooFitHist&gt;*&gt;(unfoldFuncGP-&gt;unfolding());
+
+// The unfolding automatically maximizes a marginalized likelihood to find
+// the optimal kernel parameters. However, it is possible to tune the kernel parameters
+// and therefore the regularization by hand. Add the parameters in the order of (A, L) and
+// (A, b, c).
+std::vector&lt;double&gt; kernelParm;                                                                                                                                                 
+kernelParm.push_back(22);
+kernelParm.push_back(0.00001);
+kernelParm.push_back(9.9);
+((RooUnfoldGPT&lt;RooUnfolding::RooFitHist,RooUnfolding::RooFitHist&gt;*)unfold)-&gt;SetKernelParm(kernelParm);
+
+// Unfold and get the unfolded distribution and errors.
+TVectorD gpUnfolded = unfoldGP-&gt;Vunfold();
+TVectorD gpErrors = unfoldGP-&gt;EunfoldV(RooUnfolding::kErrors);
+</code></pre>
+<p>GP with a Gibbs kernel with maximized marginal likelihood optimized kernel parameters and the above chosen kernel parameters.
+<img alt="gp" src="../img/gpMLH.jpg" /> <img alt="gp" src="../img/gpUser.jpg" /></p>
+<h2 id="covariance-matrix-and-bias">Covariance matrix and bias</h2>
+<p>As mentioned before, the estimators <script type="math/tex">\hat{\vec{\mu}}</script> have two sources of error, variance and bias. These are the quantities that the analyst should first look at when assessing their unfolding algorithm. Also, one will see in upcoming sections that these quantities and derivations thereof can be used to compare unfolding algorithms and tune the regularization. Additionally, one needs the covariance matrix if one wants to use the unfolded distribution in a fit.</p>
+<h3 id="covariance">Covariance</h3>
+<p>Lets recall the definition of the covariance matrix.</p>
+<p>
+<script type="math/tex; mode=display">
+    \mbox{Cov}(\hat{\mu}_{i}, \hat{\mu}_{j}) = E[(\hat{\mu}_{i} - E[\hat{\mu}_{i}])(\hat{\mu}_{j} - E[\hat{\mu}_{j}])]
+</script>
+</p>
+<p>All of the above mentioned algorithms have their own approach for estimating the covariance matrix. However, it is also possible to estimate the covariance matrix with the use of toy data. Generating toy data or "throwing toys" is sampling pseudo-data <script type="math/tex">\vec{n}_{toy}</script> from probability distributions of the observed data <script type="math/tex">\vec{n}</script>. In particle physics, a very common choice is Poisson distributions with mean <script type="math/tex">\vec{\nu}</script>. These pseudo-data vectors can then be unfolded with the chosen unfolding algorithm and regularization parameter. In the limit of many toys these unfolded distributions can be used to calculate the covariance with the sample covariance</p>
+<p>
+<script type="math/tex; mode=display">
+    \mbox{C}(\hat{\mu}_{i}, \hat{\mu}_{j}) = \frac{1}{K-1}\sum_{k}^{K}\Big(\big((\hat{\mu}_{i})_{k} - \frac{1}{K}\sum_{k}^{K}(\hat{\mu}_{i})_{k}\big)\big((\hat{\mu}_{j})_{k} - \frac{1}{K}\sum_{k}^{K}(\hat{\mu}_{j})_{k}\big)\Big)
+</script>
+</p>
+<p>with <script type="math/tex"> (\hat{\mu}_{i})_{k} </script> being the <script type="math/tex">i</script>-th unfolded bin of the <script type="math/tex">k</script>-th toy for <script type="math/tex">K</script> toy datasets.</p>
+<h3 id="bias">Bias</h3>
+<p>Lets recall the definition of the bias.</p>
+<p>
+<script type="math/tex; mode=display">
+    b[\hat{\vec{\mu}}] = E[\hat{\vec{\mu}}] - \vec{\mu}
+</script>
+</p>
+<p>Many of the above algorithms do not have an explicit definition for the bias. However, the same approach to pseudo-data generation as for the covariance matrix estimation can be used to estimate the bias of the unfolding framework. The bias for the <script type="math/tex">i</script>-th unfolded bin can be estimated with</p>
+<p>
+<script type="math/tex; mode=display">
+    b_{i} = \frac{1}{K}\sum_{k}^{K}(\hat{\mu}_{i})_{k} - \mu_{i}
+</script>
+</p>
+<p>with <script type="math/tex">\mu_{i}</script> being the <script type="math/tex">i</script>-th bin of a truth distribution chosen by the analyst.</p>
+<h2 id="mse-and-coverage">MSE and coverage</h2>
+<p>In this section two quantities are discussed that can be used to assess an estimator and fine tune the regularization parameter.</p>
+<h3 id="mse">MSE</h3>
+<p>As mentioned before, two sources of error of an estimator are the bias and the variance. One could choose an estimator and regularization parameter that minimizes both sources of error. A very common figure of merit is the mean squared error averaged over the bins of the truth histogram.</p>
+<p>
+<script type="math/tex; mode=display">
+    MSE = \frac{1}{N}\sum_{i}^{N}(\mbox{Cov}(\hat{\mu}_{i}, \hat{\mu}_{i}) + b_{i}^{2})
+</script>
+</p>
+<p>However, it is possible that bins with a large bin count relative to others in the histogram will dominate. An alternative weighted MSE can be used to avoid this.</p>
+<p>
+<script type="math/tex; mode=display">
+    MSE_{w} = \frac{1}{N}\sum_{i}^{N}\frac{(\mbox{Cov}(\hat{\mu}_{i}, \hat{\mu}_{i}) + b_{i}^{2})}{\hat{\mu_{i}}^{2}}
+</script>
+</p>
+<p><img alt="mse|212x397" src="../img/mse.png" /></p>
+<h3 id="coverage">Coverage</h3>
+<p>When one has an estimate for a truth bin <script type="math/tex">\hat{\mu}_{i}</script> and a corresponding variance <script type="math/tex"> \mbox{Cov}(\hat{\mu}_{i}, \hat{\mu}_{i}) = \sigma_{\hat{\mu}_{i}}^{2} </script> one can construct confidence intervals <script type="math/tex"> [\hat{\mu}_{i} - Z\sigma_{\hat{\mu}_{i}}, \hat{\mu}_{i} + Z\sigma_{\hat{\mu}_{i}}] </script>. <script type="math/tex">Z</script> is a positive integer that determines the size of the confidence interval eg. 1 for a 68.3% confidence interval. The estimator should in the limit of infinite repeated experiments cover the true distribution <script type="math/tex">\vec{\mu}</script> 68.3% of the times. Under the assumption that the observed data is Gaussian distributed one can calculate this coverage probability in closed form</p>
+<p>
+<script type="math/tex; mode=display">
+    P_{cov} = \Phi(\frac{b_{i}}{\sigma_{\hat{\mu}_{i}}} + Z) - \Phi(\frac{b_{i}}{\sigma_{\hat{\mu}_{i}}} - Z)
+</script>
+</p>
+<p>with <script type="math/tex">\Phi</script> being the Standard Gaussian cumulative distribution function and <script type="math/tex">Z</script> corresponding the size of the constructed confidence interval. The coverage is also connected to regularization. An unbiased estimator(<script type="math/tex">b_{i}=0</script>), like the ML estimator, will have a perfect coverage probability of 68.3%. In case bias is introduced by regularizing then the estimators are expected to undercover. It is up to the analyst to decide what amount of undercoverage is acceptable.</p>
+<p><img alt="cov|212x397" src="../img/cov.png" /></p>
+<p><em>M. J. Kuusela. Uncertainty quantification in unfolding elementary particle spectra at the large hadron collider. pages 84–86, 2016.</em></p>
+              
+            </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../example/" class="btn btn-neutral float-right" title="Example">Next <span class="icon icon-circle-arrow-right"></span></a>
+      
+      
+        <a href="../setup/" class="btn btn-neutral" title="Setup"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+    
+  </div>
+
+  Built with <a href="http://www.mkdocs.org">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+      
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" style="cursor: pointer">
+    <span class="rst-current-version" data-toggle="rst-current-version">
+      
+      
+        <span><a href="../setup/" style="color: #fcfcfc;">&laquo; Previous</a></span>
+      
+      
+        <span style="margin-left: 15px"><a href="../example/" style="color: #fcfcfc">Next &raquo;</a></span>
+      
+    </span>
+</div>
+    <script>var base_url = '..';</script>
+    <script src="../js/theme.js" defer></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML" defer></script>
+      <script src="../search/main.js" defer></script>
+
+</body>
+</html>
