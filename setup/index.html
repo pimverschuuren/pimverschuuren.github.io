@@ -8,7 +8,7 @@
   
   
   <link rel="shortcut icon" href="../img/favicon.ico">
-  <title>Setup - RooUnfold</title>
+  <title>Setup - RooUnfold Tutorial</title>
   <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
 
   <link rel="stylesheet" href="../css/theme.css" type="text/css" />
@@ -36,7 +36,7 @@
     
     <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
       <div class="wy-side-nav-search">
-        <a href=".." class="icon icon-home"> RooUnfold</a>
+        <a href=".." class="icon icon-home"> RooUnfold Tutorial</a>
         <div role="search">
   <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
@@ -58,15 +58,13 @@
     <a class="current" href="./">Setup</a>
     <ul class="subnav">
             
-    <li class="toctree-l2"><a href="#setup">Setup</a></li>
+    <li class="toctree-l2"><a href="#root">ROOT</a></li>
     
         <ul>
         
-            <li><a class="toctree-l3" href="#root">ROOT</a></li>
-        
             <li><a class="toctree-l3" href="#roounfold">RooUnfold</a></li>
         
-            <li><a class="toctree-l3" href="#roounfold-tutorial">RooUnfold Tutorial</a></li>
+            <li><a class="toctree-l3" href="#roounfold-tutorial-code">RooUnfold Tutorial Code</a></li>
         
             <li><a class="toctree-l3" href="#docker">Docker</a></li>
         
@@ -81,11 +79,6 @@
     <a class="" href="../tutorial/">Tutorial</a>
 	    </li>
           
-            <li class="toctree-l1">
-		
-    <a class="" href="../example/">Example</a>
-	    </li>
-          
         </ul>
       </div>
       &nbsp;
@@ -96,7 +89,7 @@
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
         <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="..">RooUnfold</a>
+        <a href="..">RooUnfold Tutorial</a>
       </nav>
 
       
@@ -118,8 +111,7 @@
           <div role="main">
             <div class="section">
               
-                <h1 id="setup">Setup</h1>
-<h2 id="root">ROOT</h2>
+                <h1 id="root">ROOT</h1>
 <p>RooUnfold is written with the use of ROOT-libraries so before building RooUnfold one needs to have a recent version of ROOT setup correctly. The fully tested and recommended ROOT version is 6.20.06. If your platform mounts CVMFS (as, for example, CERN LXPLUS does), a pre-build ROOT can be setup with the command</p>
 <pre><code>source /cvmfs/sft.cern.ch/lcg/app/releases/ROOT/6.20.06/&lt;platform&gt;/bin/thisroot.sh
 </code></pre>
@@ -141,7 +133,18 @@ cd ..
 source build/setup.sh
 </code></pre>
 <p>There are several ROOT-macro's and python scripts in the subdirectory examples and executables in the subdirectory build that can be used to test the setup.</p>
-<h2 id="roounfold-tutorial">RooUnfold Tutorial</h2>
+<h2 id="roounfold-tutorial-code">RooUnfold Tutorial Code</h2>
+<p>The tutorial is divided into sections with each section a piece of example code. The easiest way to run this code is to put it in a ROOT-macro</p>
+<pre><code>void exampleMacro(){
+
+// Put your code here
+
+}
+</code></pre>
+<p>and then run it in the terminal with</p>
+<pre><code>root exampleMacro.cxx
+</code></pre>
+<p>Note that the name of the file and the main function in the file are the same. An error will be thrown if it is not.</p>
 <h2 id="docker">Docker</h2>
               
             </div>
