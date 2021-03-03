@@ -79,6 +79,8 @@
         
             <li><a class="toctree-l3" href="#mse-and-coverage">MSE and coverage</a></li>
         
+            <li><a class="toctree-l3" href="#systematic-uncertainty">Systematic Uncertainty</a></li>
+        
         </ul>
     
 
@@ -579,6 +581,70 @@ TVectorD cov = unfold-&gt;CoverageProbV(1);
 <img alt="bias" src="../img/coverage_inv.jpg" /> <img alt="bias" src="../img/coverage_bayes2.jpg" /></p>
 <p>Note the clear undercoverage for the regularized scenario of the iterative bayes with 2 iterations and the almost perfect 68.3% coverage of the unregularized matrix inversion unfolding.</p>
 <p><em>M. J. Kuusela. Uncertainty quantification in unfolding elementary particle spectra at the large hadron collider. pages 84–86, 2016.</em></p>
+<h2 id="systematic-uncertainty">Systematic Uncertainty</h2>
+<p>There are several ways to deal with systematic uncertainties when it comes to unfolding. However, in this section a version of pseudo experiments or "toy throwing" is presented. To take systematic uncertainties into account one first has to consider the concept of nuisance parameters. For an extensive description of nuisance parameters and how they come in with statistical inference in HEP, please see the references <a href="https://pdg.lbl.gov/2020/reviews/rpp2020-rev-statistics.pdf">PDG-review by G. Cowan</a>, <a href="https://arxiv.org/abs/1503.07622">Practical Statistics for the LHC by Kyle Cranmer</a> and <a href="https://arxiv.org/abs/1807.05996">Lectures on Statistics in Theory: Prelude to Statistics in Practice by Robert D. Cousins</a>. Each nuisance parameter is used to model a source of systematic error which can originate from various places like MC sample size, theory assumptions or detector resolutions. All of the above MC used to unfold assumed all the nuisance parameters at their nominal values. To include systematic errors one needs 2 additional MC samples for each nuisance parameter that one wants to take into account i.e. MC samples generated with the nuisance parameter varied to their respective <script type="math/tex">\pm 1\sigma</script>-value. For each MC sample one can create a new response matrix and truth distribution. With these one can do the following:</p>
+<ul>
+<li>Sample a new value for each nuisance parameter according to some probability distribution function i.e. Gaussian or Poisson</li>
+<li>Use piecewise linear interpolation between the truth distribution and response matrix</li>
+<li>Forward fold the new truth distribution with the new response matrix to obtain a reconstructed level distribution</li>
+<li>Use the reconstructed level distribition as means for Poisson p.d.f.s</li>
+<li>Sample a new toy data distribution from the Poisson p.d.f.s</li>
+<li>Unfold with the nominal response matrix</li>
+<li>Estimate the covariance with the sample covariance</li>
+</ul>
+<p>This procedure is implemented in RooUnfold and can be called with only a few lines of code. Lets first assume we have three different nuisance parameters of which 2 are experimental, i.e. influence the response matrix and reconstructed level distributions, and 1 is theoretical, i.e. influences the truth level distributions, response matrix and reconstructed level distributions.</p>
+<p>Reconstructed level distributions with an efficiency nuisance parameter varied
+<img alt="NP1" src="../img/NP1.jpg" /></p>
+<p>Reconstructed level distributions with a resolution nuisance paremeter varied
+<img alt="NP2" src="../img/NP2.jpg" /></p>
+<p>Truth level distribution with a theory nuisance parameter varied
+<img alt="NP3" src="../img/NP3.jpg" /></p>
+<p>Once one has these varied distributions one can include them in their unfolding framework.</p>
+<h3 id="code-example_10">Code Example</h3>
+<pre><code>  // Make a spectator object.                                                                                                                                                                                                                                          
+  RooUnfoldSpec spec("unfold","unfold",truth_nom,"obs_truth",reco_nom,"obs_reco",response_nom,NULL,data,true,0.0005);
+
+  // Register the systematics.
+  spec.registerSystematic(RooUnfoldSpec::kResponse, "respreconp1", response_1_up, response_1_down);
+  spec.registerSystematic(RooUnfoldSpec::kResponse, "respreconp2", response_2_up, response_2_down);
+
+  // Note that the theory systematic needs to be passed with two lines but with the same
+  // name. One for the response matrix variations and one for the truth-level variations.
+  spec.registerSystematic(RooUnfoldSpec::kResponse, "responsetruthnp3", response_3_up, response_3_down);
+  spec.registerSystematic(RooUnfoldSpec::kTruth, "responsetruthnp3", truth_3_up, truth_3_down);
+
+  // Define the unfolding algorithm.                                                                                                                                                                                                                                      
+  RooUnfolding::Algorithm alg = RooUnfolding::kBayes;
+
+  // Define the regularisation parameter.
+  Double_t tau = 5;
+
+  // Get an unfolding function.                                                                                                             
+  RooUnfoldFunc* unfoldFunc = (RooUnfoldFunc*)spec.makeFunc(alg, tau);
+
+  // Instantiate a RooUnfold object with RooFitHist as template type.                                                                                                                                                                                                      
+  RooUnfoldT&lt;RooUnfolding::RooFitHist,RooUnfolding::RooFitHist&gt;* unfold = const_cast&lt;RooUnfoldT&lt;RooUnfolding::RooFitHist,RooUnfolding::RooFitHist&gt;*&gt;(unfoldFunc-&gt;unfolding());
+
+  // Include systematics. Possible arguments:
+  // kNoSystematics = Stat. only
+  // kGammas = Stat. including MC stats NPs
+  // kAlphas = Stat. including theoretical and experimental NPs
+  // kAll = Stat. including MC stats, theoretical and experimental NPs
+  unfold-&gt;IncludeSystematics(RooUnfolding::kAll);
+
+  // Unfold.                                                                                                                                                                                                                                                          
+  TVectorD unfoldedVec = unfold-&gt;Vunfold();
+
+  // Run toys and estimate the errors.
+  TVectorD errorVec = unfold-&gt;EunfoldV(RooUnfolding::kErrorsRooFitToys);
+
+  // Or estimate the covariance.
+  TMatrixD cov = unfold-&gt;Eunfold(RooUnfolding::kCovRooFitToys);
+</code></pre>
+<p>Statistical uncertainty only
+<img alt="statonly" src="../img/statonly.jpg" /></p>
+<p>All systematic and statistical uncertainties
+<img alt="allsys" src="../img/allSys.jpg" /></p>
               
             </div>
           </div>
